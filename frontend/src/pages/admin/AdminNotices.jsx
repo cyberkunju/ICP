@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react'
 import { motion } from 'motion/react'
 import { useNavigate } from 'react-router-dom'
 import ThemeToggle from '../../components/ThemeToggle'
-import CustomSelect from '../../components/CustomSelect'
 import api from '../../services/api'
 
 export default function AdminNotices() {
@@ -312,7 +311,7 @@ export default function AdminNotices() {
               {notice.image_url && (
                 <div className="md:w-80 md:flex-shrink-0">
                   <img
-                    src={`http://localhost:8080${notice.image_url}`}
+                    src={notice.image_url}
                     alt={notice.title}
                     className="w-full h-full object-cover"
                   />
@@ -328,7 +327,7 @@ export default function AdminNotices() {
         <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
           {/* Backdrop */}
           <div 
-            className="absolute inset-0 z-0"
+            className="absolute inset-0"
             onClick={() => {
               setShowAddModal(false)
               resetForm()
@@ -338,7 +337,7 @@ export default function AdminNotices() {
           {/* Modal Content */}
           <div
             onClick={(e) => e.stopPropagation()}
-            className="relative bg-white dark:bg-gray-800 rounded-2xl p-8 max-w-3xl w-full shadow-2xl max-h-[90vh] overflow-y-auto z-[10000] scrollbar-hide"
+            className="relative bg-white dark:bg-gray-800 rounded-2xl p-8 max-w-3xl w-full shadow-2xl max-h-[90vh] overflow-y-auto z-10 scrollbar-hide"
           >
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-2xl font-bold text-slate-800 dark:text-white">Create New Notice</h2>
@@ -372,50 +371,76 @@ export default function AdminNotices() {
 
                 {/* Category and Priority */}
                 <div className="grid grid-cols-2 gap-4">
-                  <CustomSelect
-                    name="category"
-                    value={formData.category}
-                    onChange={handleInputChange}
-                    options={categories}
-                    label={<>Category <span className="text-red-500">*</span></>}
-                    placeholder="Select category"
-                  />
+                  <div>
+                    <label className="block text-slate-700 dark:text-slate-300 font-semibold mb-2">
+                      Category <span className="text-red-500">*</span>
+                    </label>
+                    <select
+                      name="category"
+                      value={formData.category}
+                      onChange={handleInputChange}
+                      required
+                      className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white/50 dark:bg-gray-700/50 text-slate-800 dark:text-white focus:outline-none focus:border-red-500 transition-all"
+                    >
+                      {categories.map(cat => (
+                        <option key={cat.value} value={cat.value}>{cat.label}</option>
+                      ))}
+                    </select>
+                  </div>
 
-                  <CustomSelect
-                    name="priority"
-                    value={formData.priority}
-                    onChange={handleInputChange}
-                    options={priorities}
-                    label={<>Priority <span className="text-red-500">*</span></>}
-                    placeholder="Select priority"
-                  />
+                  <div>
+                    <label className="block text-slate-700 dark:text-slate-300 font-semibold mb-2">
+                      Priority <span className="text-red-500">*</span>
+                    </label>
+                    <select
+                      name="priority"
+                      value={formData.priority}
+                      onChange={handleInputChange}
+                      required
+                      className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white/50 dark:bg-gray-700/50 text-slate-800 dark:text-white focus:outline-none focus:border-red-500 transition-all"
+                    >
+                      {priorities.map(pri => (
+                        <option key={pri.value} value={pri.value}>{pri.label}</option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
 
                 {/* Department and Semester */}
                 <div className="grid grid-cols-2 gap-4">
-                  <CustomSelect
-                    name="department"
-                    value={formData.department}
-                    onChange={handleInputChange}
-                    options={[
-                      { value: '', label: 'All Departments' },
-                      ...departments.map(dept => ({ value: dept, label: dept }))
-                    ]}
-                    label="Department (Optional)"
-                    placeholder="Select department"
-                  />
+                  <div>
+                    <label className="block text-slate-700 dark:text-slate-300 font-semibold mb-2">
+                      Department (Optional)
+                    </label>
+                    <select
+                      name="department"
+                      value={formData.department}
+                      onChange={handleInputChange}
+                      className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white/50 dark:bg-gray-700/50 text-slate-800 dark:text-white focus:outline-none focus:border-red-500 transition-all"
+                    >
+                      <option value="">All Departments</option>
+                      {departments.map(dept => (
+                        <option key={dept} value={dept}>{dept}</option>
+                      ))}
+                    </select>
+                  </div>
 
-                  <CustomSelect
-                    name="semester"
-                    value={formData.semester}
-                    onChange={handleInputChange}
-                    options={[
-                      { value: '', label: 'All Semesters' },
-                      ...semesters.map(sem => ({ value: sem, label: `Semester ${sem}` }))
-                    ]}
-                    label="Semester (Optional)"
-                    placeholder="Select semester"
-                  />
+                  <div>
+                    <label className="block text-slate-700 dark:text-slate-300 font-semibold mb-2">
+                      Semester (Optional)
+                    </label>
+                    <select
+                      name="semester"
+                      value={formData.semester}
+                      onChange={handleInputChange}
+                      className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white/50 dark:bg-gray-700/50 text-slate-800 dark:text-white focus:outline-none focus:border-red-500 transition-all"
+                    >
+                      <option value="">All Semesters</option>
+                      {semesters.map(sem => (
+                        <option key={sem} value={sem}>Semester {sem}</option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
 
                 {/* Content */}
@@ -430,7 +455,7 @@ export default function AdminNotices() {
                     placeholder="Enter notice content or description"
                     required
                     rows="6"
-                    className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white/50 dark:bg-gray-700/50 text-slate-800 dark:text-white placeholder-slate-400 focus:outline-none focus:border-red-500 transition-all resize-none"
+                    className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white/50 dark:bg-gray-700/50 text-slate-800 dark:text-white placeholder-slate-400 focus:outline-none focus:border-red-500 transition-all"
                   ></textarea>
                 </div>
 

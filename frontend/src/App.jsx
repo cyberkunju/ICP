@@ -37,13 +37,13 @@ function ProtectedRoute({ children, allowedRoles = [] }) {
     const verifyAuth = async () => {
       const isAuthenticated = api.isAuthenticated()
       const user = api.getCurrentUser()
-      
+
       if (!isAuthenticated || !user) {
         setIsValid(false)
         setIsVerifying(false)
         return
       }
-      
+
       // Verify token with backend
       try {
         const response = await api.authenticatedGet('/auth/verify.php')
@@ -68,10 +68,10 @@ function ProtectedRoute({ children, allowedRoles = [] }) {
       }
       setIsVerifying(false)
     }
-    
+
     verifyAuth()
   }, [allowedRoles])
-  
+
   if (isVerifying) {
     return (
       <div className="min-h-screen flex items-center justify-center">

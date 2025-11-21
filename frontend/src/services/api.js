@@ -307,16 +307,6 @@ class ApiService {
     }
   }
 
-  // Teacher - Get Profile
-  async getTeacherProfile() {
-    try {
-      return await this.authenticatedGet('/teacher/get_profile.php');
-    } catch (error) {
-      console.error('Get teacher profile error:', error);
-      return { success: false, message: 'Failed to fetch profile' };
-    }
-  }
-
   // Teacher - Get Students
   async getTeacherStudents(params = {}) {
     try {
@@ -370,19 +360,7 @@ class ApiService {
     }
   }
 
-  // Student - Get Attendance (new enhanced version)
-  async getStudentAttendance(params = {}) {
-    try {
-      const queryParams = new URLSearchParams(params).toString();
-      const endpoint = `/student/get_attendance.php${queryParams ? '?' + queryParams : ''}`;
-      return await this.authenticatedGet(endpoint);
-    } catch (error) {
-      console.error('Get student attendance error:', error);
-      return { success: false, message: 'Failed to fetch attendance' };
-    }
-  }
-
-  // Student - Get Attendance History (legacy)
+  // Student - Get Attendance History
   async getAttendanceHistory(studentId = null) {
     try {
       const queryParams = studentId ? `?student_id=${studentId}` : '';
@@ -536,9 +514,7 @@ class ApiService {
         address: teacherData.address,
         department: teacherData.department,
         designation: teacherData.designation || 'Assistant Professor',
-        qualification: teacherData.qualification || 'M.Tech',
-        profile_image: teacherData.profile_image || null,
-        assigned_subjects: teacherData.assigned_subjects || []
+        qualification: teacherData.qualification || 'M.Tech'
       }
       
       return await this.authenticatedPost('/admin/teachers/create.php', payload);
@@ -568,10 +544,7 @@ class ApiService {
         address: teacherData.address,
         department: teacherData.department,
         designation: teacherData.designation || 'Assistant Professor',
-        qualification: teacherData.qualification || 'M.Tech',
-        specialization: teacherData.specialization || '',
-        profile_image: teacherData.profile_image || null,
-        assigned_subjects: teacherData.assigned_subjects || []
+        qualification: teacherData.qualification || 'M.Tech'
       }
       
       // Only include password if it's being changed
@@ -599,25 +572,27 @@ class ApiService {
   // Upload Image
   async uploadImage(file) {
     try {
+      console.log('Uploading file:', file);
+      console.log('File type:', file.type);
+      console.log('File size:', file.size);
+
       const formData = new FormData();
-      formData.append('file', file);
+      formData.append('image', file);
       
-      const token = localStorage.getItem('token');
       const response = await fetch(`${API_BASE_URL}/upload/upload_image.php`, {
         method: 'POST',
-        headers: {
-          'Authorization': token ? `Bearer ${token}` : ''
-        },
         body: formData,
       });
       
+      console.log('Response status:', response.status);
       const data = await response.json();
+      console.log('Response data:', data);
       
-      if (data.success) {
-        return { success: true, image_url: data.data.file_path };
+      if (!response.ok) {
+        return { success: false, error: data.error || 'Upload failed' };
       }
       
-      return { success: false, error: data.message || 'Upload failed' };
+      return data;
     } catch (error) {
       console.error('Upload image error:', error);
       return { success: false, error: 'Failed to upload image: ' + error.message };

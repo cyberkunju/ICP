@@ -4,7 +4,6 @@ import { useNavigate, useLocation } from 'react-router-dom'
 import ThemeToggle from '../../components/ThemeToggle'
 import CustomSelect from '../../components/CustomSelect'
 import CustomAlert from '../../components/CustomAlert'
-import ImageCropper from '../../components/ImageCropper'
 import api from '../../services/api'
 
 export default function AdminAddTeacher() {
@@ -14,16 +13,11 @@ export default function AdminAddTeacher() {
   
   const editTeacher = location.state?.teacher
   const isEditMode = !!editTeacher
-  
+
   const [loading, setLoading] = useState(false)
   const [subjects, setSubjects] = useState([])
   const [filteredSubjects, setFilteredSubjects] = useState([])
   const [alert, setAlert] = useState({ show: false, message: '', type: 'success' })
-  
-  // Image upload state
-  const [selectedImage, setSelectedImage] = useState(null)
-  const [imagePreview, setImagePreview] = useState(null)
-  const [showCropper, setShowCropper] = useState(false)
   
   // Form data
   const [formData, setFormData] = useState({
@@ -36,7 +30,7 @@ export default function AdminAddTeacher() {
     specialization: editTeacher?.specialization || '',
     phone: editTeacher?.phone || '',
     qualification: editTeacher?.qualification || 'Ph.D.',
-    assigned_subjects: editTeacher?.assigned_subjects?.map(s => s.id) || []
+    assigned_subjects: []
   })
 
   const departments = ['BCA', 'BBA', 'B.Com']
@@ -51,11 +45,6 @@ export default function AdminAddTeacher() {
       return
     }
     fetchSubjects()
-    
-    // Load existing profile image if editing
-    if (editTeacher?.profile_image) {
-      setImagePreview(`http://localhost:8080${editTeacher.profile_image}`)
-    }
   }, [])
 
   useEffect(() => {
@@ -83,11 +72,11 @@ export default function AdminAddTeacher() {
     if (name === 'full_name') {
       const username = value.toLowerCase()
       setFormData(prev => ({ ...prev, [name]: value, username }))
-    } 
+    }
     // Auto-lowercase email
     else if (name === 'email') {
       setFormData(prev => ({ ...prev, [name]: value.toLowerCase() }))
-    } 
+    }
     else {
       setFormData(prev => ({ ...prev, [name]: value }))
     }
@@ -101,12 +90,6 @@ export default function AdminAddTeacher() {
         : [...prev.assigned_subjects, subjectId]
     }))
   }
-  
-  const handleImageCropped = (blob) => {
-    setSelectedImage(blob)
-    setImagePreview(URL.createObjectURL(blob))
-    setShowCropper(false)
-  }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -119,34 +102,7 @@ export default function AdminAddTeacher() {
     
     setLoading(true)
     
-    let profileImageUrl = null
-    
-    // Upload image if selected
-    if (selectedImage) {
-      if (!selectedImage || !(selectedImage instanceof Blob)) {
-        showAlert('Invalid image data', 'Invalid image data. Please try uploading again.', 'error')
-        setLoading(false)
-        return
-      }
-      
-      const uploadResponse = await api.uploadImage(selectedImage)
-      
-      if (uploadResponse.success) {
-        profileImageUrl = uploadResponse.image_url
-      } else {
-        showAlert('Upload failed', 'Failed to upload image: ' + (uploadResponse.error || 'Unknown error'), 'error')
-        setLoading(false)
-        return
-      }
-    }
-    
     const submitData = { ...formData }
-    
-    // Add profile image if uploaded
-    if (profileImageUrl) {
-      submitData.profile_image = profileImageUrl
-    }
-    
     const nameParts = submitData.full_name.trim().split(' ')
     submitData.first_name = nameParts[0]
     submitData.last_name = nameParts.slice(1).join(' ') || '.'
@@ -168,17 +124,17 @@ export default function AdminAddTeacher() {
       : await api.addTeacher(submitData)
     
     if (response.success) {
-      setAlert({ 
-        show: true, 
-        message: isEditMode ? 'Teacher updated successfully!' : 'Teacher added successfully!', 
-        type: 'success' 
+      setAlert({
+        show: true,
+        message: isEditMode ? 'Teacher updated successfully!' : 'Teacher added successfully!',
+        type: 'success'
       })
       setTimeout(() => navigate('/admin/teachers'), 1500)
     } else {
-      setAlert({ 
-        show: true, 
-        message: response.message || response.error || (isEditMode ? 'Failed to update teacher' : 'Failed to add teacher'), 
-        type: 'error' 
+      setAlert({
+        show: true,
+        message: response.message || response.error || (isEditMode ? 'Failed to update teacher' : 'Failed to add teacher'),
+        type: 'error'
       })
       setLoading(false)
     }
@@ -231,55 +187,7 @@ export default function AdminAddTeacher() {
         animate={{ opacity: 1, height: 'auto' }}
         className="bg-white/30 dark:bg-gray-800/30 backdrop-blur-xl rounded-2xl p-6 border border-white/20 shadow-lg"
       >
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Profile Photo Upload */}
-          <div className="flex items-center gap-6 p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
-            <div>
-              {imagePreview ? (
-                <img 
-                  src={imagePreview} 
-                  alt="Preview" 
-                  className="w-24 h-24 rounded-full object-cover border-4 border-green-500"
-                />
-              ) : (
-                <div className="w-24 h-24 rounded-full bg-gray-300 dark:bg-gray-600 flex items-center justify-center">
-                  <i className="fas fa-user text-4xl text-gray-500 dark:text-gray-400"></i>
-                </div>
-              )}
-            </div>
-            <div className="flex-1">
-              <label className="block text-slate-700 dark:text-slate-300 font-semibold mb-2">
-                Profile Photo (Optional)
-              </label>
-              <div className="flex gap-3">
-                <button
-                  type="button"
-                  onClick={() => setShowCropper(true)}
-                  className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg font-semibold text-sm"
-                >
-                  <i className="fas fa-camera mr-2"></i>
-                  {imagePreview ? 'Change Photo' : 'Upload Photo'}
-                </button>
-                {imagePreview && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setImagePreview(null)
-                      setSelectedImage(null)
-                    }}
-                    className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg font-semibold text-sm"
-                  >
-                    <i className="fas fa-trash"></i>
-                  </button>
-                )}
-              </div>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mt-2">
-                Image will be auto-cropped to circular format
-              </p>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Teacher ID */}
           <div>
             <label className="block text-slate-700 dark:text-slate-300 font-semibold mb-2">
@@ -434,9 +342,7 @@ export default function AdminAddTeacher() {
           </div>
 
           {/* Assigned Subjects */}
-          </div>
-
-          <div>
+          <div className="md:col-span-2">
             <label className="block text-slate-700 dark:text-slate-300 font-semibold mb-2">
               Assign Subjects <span className="text-red-500">*</span> <span className="text-slate-500 text-sm">(Select at least one subject)</span>
             </label>
@@ -505,14 +411,6 @@ export default function AdminAddTeacher() {
         type={alert.type}
         onClose={() => setAlert({ ...alert, show: false })}
       />
-
-      {/* Image Cropper Modal */}
-      {showCropper && (
-        <ImageCropper
-          onImageCropped={handleImageCropped}
-          onCancel={() => setShowCropper(false)}
-        />
-      )}
     </motion.div>
   )
 }

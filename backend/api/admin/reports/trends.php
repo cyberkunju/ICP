@@ -117,7 +117,7 @@ try {
     } elseif ($metric === 'performance') {
         if ($period === 'monthly') {
             // Monthly performance trends (based on marks entry date)
-            // Schema has entered_at for marks creation timestamp
+            // Using entered_at as per database schema
             $query = "SELECT 
                 DATE_FORMAT(m.entered_at, '%Y-%m') as period,
                 ROUND(AVG(m.grade_point), 2) as average_gpa,
