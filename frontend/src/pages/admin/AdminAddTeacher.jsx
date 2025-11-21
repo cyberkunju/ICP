@@ -163,7 +163,6 @@ export default function AdminAddTeacher() {
       submitData.designation = 'Teacher'
     }
 
-<<<<<<< HEAD
     const response = isEditMode
       ? await api.updateTeacher(editTeacher.teacher_id, submitData)
       : await api.addTeacher(submitData)
