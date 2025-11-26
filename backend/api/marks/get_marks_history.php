@@ -25,8 +25,11 @@ if (!in_array($user['role'], ['teacher', 'staff'])) {
 }
 
 try {
-    $database = new Database();
-    $db = $database->getConnection();
+    // For testing, a global $db variable can be injected.
+    if (!isset($db)) {
+        $database = new Database();
+        $db = $database->getConnection();
+    }
 
     $userId = $user['user_id'] ?? $user['id'] ?? null;
     if (!$userId) {

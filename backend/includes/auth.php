@@ -47,8 +47,11 @@ function verifyAuth() {
         require_once __DIR__ . '/TokenBlacklist.php';
         
         try {
-            $database = new Database();
-            $db = $database->getConnection();
+            // For testing, a global $db variable can be injected.
+            if (!isset($db)) {
+                $database = new Database();
+                $db = $database->getConnection();
+            }
             if ($db) {
                 $blacklist = new TokenBlacklist($db);
                 if ($blacklist->isBlacklisted($payload['jti'])) {
