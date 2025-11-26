@@ -17,12 +17,19 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 }
 
 // Get posted data
-$data = json_decode(file_get_contents("php://input"));
+if (function_exists('TestHelpers\file_get_contents')) {
+    $data = json_decode(\TestHelpers\file_get_contents("php://input"));
+} else {
+    $data = json_decode(file_get_contents("php://input"));
+}
 
 // Rate limiting for login (stricter than global)
 require_once __DIR__ . '/../../includes/RateLimiter.php';
-$database = new Database();
-$db = $database->getConnection();
+// For testing, a global $db variable can be injected.
+if (!isset($db)) {
+    $database = new Database();
+    $db = $database->getConnection();
+}
 
 if ($db) {
     $rateLimiter = new RateLimiter($db);
@@ -48,9 +55,6 @@ if (empty($data->username) || empty($data->password)) {
     exit();
 }
 
-// Get database connection
-$database = new Database();
-$db = $database->getConnection();
 
 if (!$db) {
     http_response_code(500);

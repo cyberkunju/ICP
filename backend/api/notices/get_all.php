@@ -12,8 +12,10 @@ $user = verifyAuth();
 if (!$user) sendError('Unauthorized', 'unauthorized', 401);
 
 try {
-    $database = new Database();
-    $db = $database->getConnection();
+    if (!isset($db)) {
+        $database = new Database();
+        $db = $database->getConnection();
+    }
     
     // Default query parameters
     $params = [];
