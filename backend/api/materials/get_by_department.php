@@ -21,8 +21,10 @@ if (!$dept) {
 }
 
 try {
-    $database = new Database();
-    $db = $database->getConnection();
+    if (!isset($db)) {
+        $database = new Database();
+        $db = $database->getConnection();
+    }
 
     // Security check: Students/Teachers can only access their own department
     if ($user['role'] === 'student') {

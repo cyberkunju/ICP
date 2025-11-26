@@ -22,8 +22,10 @@ $studentId = isset($_GET['student_id']) ? $_GET['student_id'] : null;
 // If student is requesting, they can only see their own
 if ($user['role'] === 'student') {
     // Get student's internal ID
-    $database = new Database();
-    $db = $database->getConnection();
+    if (!isset($db)) {
+        $database = new Database();
+        $db = $database->getConnection();
+    }
     $stmt = $db->prepare("SELECT id FROM students WHERE user_id = ?");
     $stmt->execute([$user['user_id']]);
     $student = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -37,8 +39,10 @@ if ($user['role'] === 'student') {
 }
 
 try {
-    $database = new Database();
-    $db = $database->getConnection();
+    if (!isset($db)) {
+        $database = new Database();
+        $db = $database->getConnection();
+    }
     
     // Get active session
     $session = getActiveSession($db);
